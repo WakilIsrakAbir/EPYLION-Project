@@ -1,0 +1,2239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epylion Group Dashboard - Multi Tab & Dynamic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sidebar: '#313644',
+                        sidebarDark: '#2b2f3a',
+                        sidebarHover: '#1f232b',
+                        sidebarActive: '#404656',
+                        textMuted: '#aeb2b7',
+                        epylionGreen: '#4CAF50',
+                        activeBlue: '#3b82f6',
+                        tableHeader: '#f8f9fa'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Smooth scrolling for tabs */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    </style>
+</head>
+
+<body class="flex h-screen bg-[#f4f5f7] text-gray-800 overflow-hidden text-[13px] font-sans" onload="initDashboard()">
+
+    <div id="toast"
+        class="fixed bottom-5 right-5 bg-gray-800 text-white px-5 py-3 rounded-md shadow-lg transition-opacity duration-300 opacity-0 pointer-events-none z-50 flex items-center gap-3">
+        <i class="fas fa-info-circle text-blue-400"></i>
+        <span id="toastMessage">Action triggered</span>
+    </div>
+
+    <div id="sidebar"
+        class="fixed md:relative z-50 h-full bg-sidebar flex-shrink-0 transition-all duration-300 overflow-hidden w-[280px] -translate-x-full md:translate-x-0 md:w-[280px] shadow-2xl md:shadow-none">
+        <div
+            class="w-[280px] h-full flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 text-textMuted relative">
+            <div class="absolute top-4 right-4 text-white cursor-pointer md:hidden z-10" onclick="closeSidebarMobile()">
+                <i class="fas fa-times text-lg"></i>
+            </div>
+
+            <div class="p-4 bg-sidebarDark text-white text-xl font-bold flex items-center border-b border-[#1f232b] whitespace-nowrap cursor-pointer"
+                onclick="showDashboardHome()">
+                <i class="fas fa-sun text-yellow-400 mr-2"></i>
+                <span class="text-epylionGreen tracking-wider">EPYLION</span>
+            </div>
+
+            <div class="p-4 flex items-center border-b border-[#1f232b] whitespace-nowrap cursor-pointer hover:bg-sidebarHover transition-colors"
+                onclick="showDashboardHome()">
+                <div
+                    class="w-[30px] h-[30px] rounded-full mr-3 bg-gray-400 flex items-center justify-center text-white shrink-0">
+                    <i class="fas fa-user text-sm"></i>
+                </div>
+                <span class="text-[13px] text-gray-200">Anwarul Haque Shimul</span>
+                <i class="fas fa-search ml-auto cursor-pointer hover:text-white transition-colors pl-2"
+                    onclick="event.stopPropagation(); showToast('Opening Search')"></i>
+            </div>
+
+            <ul class="py-2 w-full">
+                <li>
+                    <div class="px-4 py-3 flex justify-between items-center hover:bg-sidebarDark hover:text-white transition-colors cursor-pointer"
+                        onclick="toggleSubmenu(this, 'adminMenu')">
+                        <span>Admin Panel</span><i
+                            class="fas fa-chevron-left text-[10px] transition-transform duration-200"></i>
+                    </div>
+                    <ul class="bg-sidebarDark hidden" id="adminMenu">
+                        <li><a href="#"
+                                class="submenu-link block py-2 pl-6 pr-4 text-gray-400 hover:text-white transition-colors"
+                                data-id="userManagement"
+                                onclick="loadMenuData('userManagement', 'User Management')">User Management</a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <div class="px-4 py-3 flex justify-between items-center hover:bg-sidebarDark hover:text-white transition-colors cursor-pointer"
+                        onclick="toggleSubmenu(this, 'orderMenu')">
+                        <span>Order Management</span><i
+                            class="fas fa-chevron-left text-[10px] transition-transform duration-200"></i>
+                    </div>
+                    <ul class="bg-sidebarDark hidden" id="orderMenu">
+                        <li><a href="#"
+                                class="submenu-link block py-2 pl-6 pr-4 text-gray-400 hover:text-white transition-colors"
+                                data-id="fabricBooking"
+                                onclick="loadMenuData('fabricBooking', 'Fabric Booking Acknowledgement')">Fabric Booking
+                                Acknowledgement<br>(EWO)</a></li>
+                        <li><a href="#"
+                                class="submenu-link block py-2 pl-6 pr-4 text-gray-400 hover:text-white transition-colors"
+                                data-id="inputRequirement"
+                                onclick="loadMenuData('inputRequirement', 'Input Requirement (IR)')">Input Requirement
+                                (IR)</a></li>
+                        <li><a href="#"
+                                class="submenu-link block py-2 pl-6 pr-4 text-gray-400 hover:text-white transition-colors"
+                                data-id="fabricUtilization"
+                                onclick="loadMenuData('fabricUtilization', 'Fabric Utilization Proposal')">Fabric
+                                Utilization Proposal</a></li>
+                        <li><a href="#"
+                                class="submenu-link block py-2 pl-6 pr-4 text-gray-400 hover:text-white transition-colors"
+                                data-id="fabricConfirmation"
+                                onclick="loadMenuData('fabricConfirmation', 'Fabric Utilization Confirmation')">Fabric
+                                Utilization Confirmation</a></li>
+                        <li><a href="#"
+                                class="submenu-link block py-2 pl-6 pr-4 text-gray-400 hover:text-white transition-colors"
+                                data-id="irEndorsement"
+                                onclick="loadMenuData('irEndorsement', 'Input Requirement (IR) Endorsement')">Input
+                                requirment (IR) Endorsement</a></li>
+                        <li><a href="#"
+                                class="submenu-link block py-2 pl-6 pr-4 text-gray-400 hover:text-white transition-colors"
+                                data-id="irApproval"
+                                onclick="loadMenuData('irApproval', 'Input Requirement (IR) Approval')">Input requirment
+                                (IR) Approval</a></li>
+                        <li><a href="#"
+                                class="submenu-link block py-2 pl-6 pr-4 text-gray-400 hover:text-white transition-colors"
+                                data-id="importData"
+                                onclick="loadMenuData('importData', 'Import Historical Data')">Import Historical
+                                Data(Bulk & SMS)</a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <div class="px-4 py-3 flex justify-between items-center hover:bg-sidebarDark hover:text-white transition-colors cursor-pointer"
+                        onclick="toggleSubmenu(this, 'scMenu')">
+                        <span>Supply Chain Management</span><i
+                            class="fas fa-chevron-left text-[10px] transition-transform duration-200"></i>
+                    </div>
+                    <ul class="bg-sidebarDark hidden" id="scMenu">
+                        <li><a href="#"
+                                class="submenu-link block py-2 pl-6 pr-4 text-gray-400 hover:text-white transition-colors"
+                                data-id="vendorManagement"
+                                onclick="loadMenuData('vendorManagement', 'Vendor Management')">Vendor Management</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li>
+                    <div class="px-4 py-3 flex justify-between items-center hover:bg-sidebarDark hover:text-white transition-colors cursor-pointer"
+                        onclick="toggleSubmenu(this, 'invMenu')">
+                        <span>Inventory Management</span><i
+                            class="fas fa-chevron-left text-[10px] transition-transform duration-200"></i>
+                    </div>
+                    <ul class="bg-sidebarDark hidden" id="invMenu">
+                        <li><a href="#"
+                                class="submenu-link block py-2 pl-6 pr-4 text-gray-400 hover:text-white transition-colors"
+                                data-id="stockCheck" onclick="loadMenuData('stockCheck', 'Stock Check')">Stock Check</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="mobileOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity"
+        onclick="closeSidebarMobile()"></div>
+
+    <div class="flex-1 flex flex-col overflow-hidden w-full relative">
+
+        <div class="bg-white border-b border-gray-200 flex items-center justify-between px-4 h-[40px] shrink-0">
+            <i class="fas fa-bars text-gray-500 cursor-pointer hover:text-activeBlue text-lg transition-transform hover:scale-110"
+                onclick="toggleSidebar()"></i>
+            <div class="flex gap-4 text-activeBlue cursor-pointer">
+                <i class="fas fa-question text-lg hover:text-blue-700 transition-transform hover:scale-110"
+                    onclick="showToast('Opening Help Center')"></i>
+                <i class="fas fa-cog text-lg hover:text-blue-700 transition-transform hover:scale-110"
+                    onclick="showToast('Opening Quick Settings')"></i>
+            </div>
+        </div>
+
+        <div id="dashboardHomeView" class="flex-1 flex flex-col overflow-hidden">
+            <div
+                class="bg-gray-100 border-b border-gray-200 flex items-end px-2 pt-2 gap-1 shrink-0 overflow-x-auto custom-scrollbar">
+                <div
+                    class="nav-tab active-tab px-4 py-2 bg-white border border-gray-200 border-b-0 rounded-t font-semibold text-gray-700 cursor-pointer flex items-center shrink-0">
+                    Dashboard <i class="fas fa-home ml-2 text-activeBlue"></i>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto bg-[#f4f5f7] p-4 md:p-6 flex flex-col gap-6">
+                <div
+                    class="bg-gradient-to-r from-sidebarDark to-[#3a445c] rounded-xl p-6 md:p-8 text-white shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-10 -top-10 w-48 h-48 bg-white opacity-5 rounded-full blur-2xl"></div>
+                    <div class="absolute right-20 -bottom-10 w-32 h-32 bg-activeBlue opacity-20 rounded-full blur-xl">
+                    </div>
+                    <div
+                        class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h2 class="text-2xl md:text-3xl font-bold mb-2 tracking-wide">Welcome back, Anwarul Haque
+                                Shimul! 👋</h2>
+                            <p class="text-gray-300 text-sm font-medium">Here's an overview of your Supply Chain & Order
+                                Management status.</p>
+                        </div>
+                        <div
+                            class="text-left md:text-right bg-black bg-opacity-20 p-3 rounded-lg backdrop-blur-sm border border-gray-600 border-opacity-30">
+                            <p class="text-base font-semibold text-white"><i
+                                    class="far fa-calendar-alt mr-2 text-activeBlue"></i> 13 April, 2026</p>
+                            <p class="text-xs text-gray-300 mt-1"><i
+                                    class="fas fa-map-marker-alt mr-2 text-red-400"></i> Dhaka, Bangladesh</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                        <h3 class="text-gray-800 font-bold mb-4 border-b border-gray-100 pb-2"><i
+                                class="fas fa-bell text-activeBlue mr-2"></i>Recent Updates</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3 text-sm text-gray-600"><span
+                                    class="w-2 h-2 mt-1.5 rounded-full bg-red-500 shrink-0"></span> Denim Fabric 12oz
+                                stock discrepancy found in Zone B.</li>
+                            <li class="flex items-start gap-3 text-sm text-gray-600"><span
+                                    class="w-2 h-2 mt-1.5 rounded-full bg-yellow-500 shrink-0"></span> IR-2026-085
+                                requires your endorsement.</li>
+                            <li class="flex items-start gap-3 text-sm text-gray-600"><span
+                                    class="w-2 h-2 mt-1.5 rounded-full bg-green-500 shrink-0"></span> FBA-280011 has
+                                been marked as completed.</li>
+                            <li class="flex items-start gap-3 text-sm text-gray-600"><span
+                                    class="w-2 h-2 mt-1.5 rounded-full bg-blue-500 shrink-0"></span> Import Historical
+                                Data task finished successfully.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                        <h3 class="text-gray-800 font-bold mb-4 border-b border-gray-100 pb-2"><i
+                                class="fas fa-bolt text-yellow-500 mr-2"></i>Quick Actions</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <button
+                                class="px-4 py-2 bg-blue-50 text-activeBlue border border-blue-100 rounded hover:bg-blue-100 transition-colors text-sm font-medium"
+                                onclick="loadMenuData('inputRequirement', 'Input Requirement (IR)')">View Pending
+                                IR</button>
+                            <button
+                                class="px-4 py-2 bg-green-50 text-green-600 border border-green-100 rounded hover:bg-green-100 transition-colors text-sm font-medium"
+                                onclick="loadMenuData('fabricBooking', 'Fabric Booking Acknowledgement')">Check
+                                Bookings</button>
+                            <button
+                                class="px-4 py-2 bg-gray-50 text-gray-700 border border-gray-200 rounded hover:bg-gray-100 transition-colors text-sm font-medium"
+                                onclick="loadMenuData('stockCheck', 'Stock Check')">Inventory Check</button>
+                            <button
+                                class="px-4 py-2 bg-purple-50 text-purple-600 border border-purple-100 rounded hover:bg-purple-100 transition-colors text-sm font-medium"
+                                onclick="loadMenuData('vendorManagement', 'Vendor Management')">Manage Vendors</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="listView" class="hidden flex-1 flex-col overflow-hidden">
+            <div class="bg-gray-100 border-b border-gray-200 flex items-end px-2 pt-2 gap-1 shrink-0 overflow-x-auto whitespace-nowrap custom-scrollbar"
+                id="tabBarContainer">
+                <button
+                    class="px-3 py-1.5 bg-white border border-gray-200 border-b-0 rounded-t text-activeBlue hover:bg-gray-50 flex items-center shadow-sm shrink-0"
+                    onclick="showToast('Dropdown action')">Close <i class="fas fa-caret-down ml-1"></i></button>
+                <button class="px-2 py-1.5 text-gray-500 hover:text-gray-800 shrink-0"><i
+                        class="fas fa-angle-double-left"></i></button>
+
+                <div id="dashboardTabItem"
+                    class="nav-tab px-4 py-2 bg-gray-50 border border-gray-200 border-b-0 rounded-t text-gray-600 hover:bg-gray-100 cursor-pointer shrink-0 transition-colors"
+                    onclick="showDashboardHome()">
+                    Dashboard
+                </div>
+
+                <div id="dynamicTabsWrapper" class="flex gap-1 items-end"></div>
+
+                <button class="px-2 py-1.5 text-gray-500 hover:text-gray-800 ml-auto shrink-0"><i
+                        class="fas fa-angle-double-right"></i></button>
+            </div>
+
+            <div class="p-3 flex-1 overflow-y-auto bg-white flex flex-col w-full">
+
+                <div class="flex flex-wrap gap-2 mb-3 shrink-0" id="filterContainer">
+                    <button
+                        class="filter-btn px-3 py-1.5 bg-green-700 text-white border border-green-800 rounded-sm whitespace-nowrap shadow-sm font-medium transition-colors filter-all"
+                        onclick="activateFilter('All')">
+                        <i class="fas fa-list mr-1 text-white"></i> All List(s)
+                    </button>
+                    <button
+                        class="filter-btn px-3 py-1.5 bg-[#f4f5f7] text-gray-600 border border-gray-300 hover:bg-gray-200 rounded-sm whitespace-nowrap shadow-sm transition-colors filter-pending"
+                        onclick="activateFilter('Pending')">
+                        <i class="fas fa-list mr-1 text-gray-400"></i> Pending Actions List(s)
+                    </button>
+                    <button
+                        class="filter-btn px-3 py-1.5 bg-[#f4f5f7] text-gray-600 border border-gray-300 hover:bg-gray-200 rounded-sm whitespace-nowrap shadow-sm transition-colors filter-completed"
+                        onclick="activateFilter('Completed')">
+                        <i class="fas fa-list mr-1 text-gray-400"></i> Completed / Approved List(s)
+                    </button>
+                    <button
+                        class="filter-btn px-3 py-1.5 bg-[#f4f5f7] text-gray-600 border border-gray-300 hover:bg-gray-200 rounded-sm whitespace-nowrap shadow-sm transition-colors filter-draft"
+                        onclick="activateFilter('Draft')">
+                        <i class="fas fa-list mr-1 text-gray-400"></i> Drafts
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto border border-gray-200 flex-1 w-full relative">
+
+                    <div id="table_userManagement" class="data-table-container hidden">
+                        <table class="w-full text-left whitespace-nowrap min-w-max">
+                            <thead>
+                                <tr class="bg-tableHeader text-gray-600 border-b border-gray-200">
+                                    <th
+                                        class="p-2 border-r border-gray-200 font-semibold text-center w-[100px] sticky left-0 bg-tableHeader z-10">
+                                        Manage</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Employee ID</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Name</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Role</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Department</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Last Login</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Status</th>
+                                </tr>
+                                <tr class="bg-tableHeader border-b border-gray-200">
+                                    <th class="p-1 border-r border-gray-200 sticky left-0 bg-tableHeader z-10"></th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('EMP-1001')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">EMP-1001</td>
+                                    <td class="p-2 border-r border-gray-100">Anwarul Haque Shimul</td>
+                                    <td class="p-2 border-r border-gray-100">System Admin</td>
+                                    <td class="p-2 border-r border-gray-100">IT</td>
+                                    <td class="p-2 border-r border-gray-100">13-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Active</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('EMP-1042')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">EMP-1042</td>
+                                    <td class="p-2 border-r border-gray-100">Rafiqul Islam</td>
+                                    <td class="p-2 border-r border-gray-100">Merchandiser</td>
+                                    <td class="p-2 border-r border-gray-100">Order Management</td>
+                                    <td class="p-2 border-r border-gray-100">12-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Active</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('EMP-2099')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">EMP-2099</td>
+                                    <td class="p-2 border-r border-gray-100">Nusrat Jahan</td>
+                                    <td class="p-2 border-r border-gray-100">Inventory Manager</td>
+                                    <td class="p-2 border-r border-gray-100">Supply Chain</td>
+                                    <td class="p-2 border-r border-gray-100">05-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs border border-red-200">Inactive</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('EMP-3011')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">EMP-3011</td>
+                                    <td class="p-2 border-r border-gray-100">Kamrul Hasan</td>
+                                    <td class="p-2 border-r border-gray-100">Quality Control</td>
+                                    <td class="p-2 border-r border-gray-100">Production</td>
+                                    <td class="p-2 border-r border-gray-100">10-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Active</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('EMP-4050')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">EMP-4050</td>
+                                    <td class="p-2 border-r border-gray-100">Jahid Hossain</td>
+                                    <td class="p-2 border-r border-gray-100">Operations Head</td>
+                                    <td class="p-2 border-r border-gray-100">Management</td>
+                                    <td class="p-2 border-r border-gray-100">01-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Pending
+                                            Review</span></td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('EMP-5021')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">EMP-5021</td>
+                                    <td class="p-2 border-r border-gray-100">Tariqul Alam</td>
+                                    <td class="p-2 border-r border-gray-100">Executive</td>
+                                    <td class="p-2 border-r border-gray-100">HR</td>
+                                    <td class="p-2 border-r border-gray-100">14-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Active</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('EMP-5100')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">EMP-5100</td>
+                                    <td class="p-2 border-r border-gray-100">Sadia Afrin</td>
+                                    <td class="p-2 border-r border-gray-100">Asst. Manager</td>
+                                    <td class="p-2 border-r border-gray-100">Finance</td>
+                                    <td class="p-2 border-r border-gray-100">13-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Active</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('EMP-5520')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">EMP-5520</td>
+                                    <td class="p-2 border-r border-gray-100">Mahmudul Hasan</td>
+                                    <td class="p-2 border-r border-gray-100">Supervisor</td>
+                                    <td class="p-2 border-r border-gray-100">Logistics</td>
+                                    <td class="p-2 border-r border-gray-100">02-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Pending
+                                            Review</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="table_fabricBooking" class="data-table-container hidden">
+                        <table class="w-full text-left whitespace-nowrap min-w-max">
+                            <thead>
+                                <tr class="bg-tableHeader text-gray-600 border-b border-gray-200">
+                                    <th
+                                        class="p-2 border-r border-gray-200 font-semibold text-center w-[100px] sticky left-0 bg-tableHeader z-10">
+                                        Manage</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Booking Ref</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Date</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Supplier</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Fabric Type</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Quantity</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Status</th>
+                                </tr>
+                                <tr class="bg-tableHeader border-b border-gray-200">
+                                    <th class="p-1 border-r border-gray-200 sticky left-0 bg-tableHeader z-10"></th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('FBA-264271')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">FBA-264271</td>
+                                    <td class="p-2 border-r border-gray-100">10-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">Texmaco Limited</td>
+                                    <td class="p-2 border-r border-gray-100">100% Cotton Single Jersey</td>
+                                    <td class="p-2 border-r border-gray-100">15,000 kg</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Acknowledged</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('FBA-270122')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">FBA-270122</td>
+                                    <td class="p-2 border-r border-gray-100">11-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">Noman Group</td>
+                                    <td class="p-2 border-r border-gray-100">Denim 12oz</td>
+                                    <td class="p-2 border-r border-gray-100">8,500 yds</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Pending</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('FBA-280011')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">FBA-280011</td>
+                                    <td class="p-2 border-r border-gray-100">08-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">Envoy Textiles</td>
+                                    <td class="p-2 border-r border-gray-100">Fleece 300 GSM</td>
+                                    <td class="p-2 border-r border-gray-100">12,000 kg</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Completed</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('FBA-291120')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">FBA-291120</td>
+                                    <td class="p-2 border-r border-gray-100">05-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">Ha-Meem Denim</td>
+                                    <td class="p-2 border-r border-gray-100">Denim Stretch</td>
+                                    <td class="p-2 border-r border-gray-100">5,000 yds</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs border border-gray-200">Draft</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('FBA-300122')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">FBA-300122</td>
+                                    <td class="p-2 border-r border-gray-100">14-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">BEXIMCO Textiles</td>
+                                    <td class="p-2 border-r border-gray-100">100% Cotton Twill</td>
+                                    <td class="p-2 border-r border-gray-100">10,000 yds</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Pending</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('FBA-310455')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">FBA-310455</td>
+                                    <td class="p-2 border-r border-gray-100">12-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">Pahartali Textiles</td>
+                                    <td class="p-2 border-r border-gray-100">Polyester Blend</td>
+                                    <td class="p-2 border-r border-gray-100">22,000 kg</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Acknowledged</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('FBA-320991')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">FBA-320991</td>
+                                    <td class="p-2 border-r border-gray-100">09-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">Viyellatex Group</td>
+                                    <td class="p-2 border-r border-gray-100">CVC Fleece</td>
+                                    <td class="p-2 border-r border-gray-100">18,500 kg</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs border border-gray-200">Draft</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="table_inputRequirement" class="data-table-container hidden">
+                        <table class="w-full text-left whitespace-nowrap min-w-max">
+                            <thead>
+                                <tr class="bg-tableHeader text-gray-600 border-b border-gray-200">
+                                    <th
+                                        class="p-2 border-r border-gray-200 font-semibold text-center w-[100px] sticky left-0 bg-tableHeader z-10">
+                                        Manage</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">IR No.</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Generation Date</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Style No.</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Buyer</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Required By</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Status</th>
+                                </tr>
+                                <tr class="bg-tableHeader border-b border-gray-200">
+                                    <th class="p-1 border-r border-gray-200 sticky left-0 bg-tableHeader z-10"></th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IR-2026-081')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IR-2026-081</td>
+                                    <td class="p-2 border-r border-gray-100">12-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">ST-AW26-01</td>
+                                    <td class="p-2 border-r border-gray-100">Vogue Sourcing</td>
+                                    <td class="p-2 border-r border-gray-100">30-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Completed</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IR-2026-082')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IR-2026-082</td>
+                                    <td class="p-2 border-r border-gray-100">12-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">ST-AW26-05</td>
+                                    <td class="p-2 border-r border-gray-100">Tommy Jeans</td>
+                                    <td class="p-2 border-r border-gray-100">05-May-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Pending</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IR-2026-095')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IR-2026-095</td>
+                                    <td class="p-2 border-r border-gray-100">10-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">HM-SUM26-12</td>
+                                    <td class="p-2 border-r border-gray-100">H&M</td>
+                                    <td class="p-2 border-r border-gray-100">15-May-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs border border-gray-200">Draft</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IR-2026-102')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IR-2026-102</td>
+                                    <td class="p-2 border-r border-gray-100">08-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">ZA-FW26-09</td>
+                                    <td class="p-2 border-r border-gray-100">Zara</td>
+                                    <td class="p-2 border-r border-gray-100">20-May-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Approved</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IR-2026-115')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IR-2026-115</td>
+                                    <td class="p-2 border-r border-gray-100">14-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">MNS-SPR26-02</td>
+                                    <td class="p-2 border-r border-gray-100">Marks & Spencer</td>
+                                    <td class="p-2 border-r border-gray-100">01-Jun-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Pending</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IR-2026-120')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IR-2026-120</td>
+                                    <td class="p-2 border-r border-gray-100">13-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">PUMA-AT26-55</td>
+                                    <td class="p-2 border-r border-gray-100">Puma</td>
+                                    <td class="p-2 border-r border-gray-100">10-Jun-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Completed</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IR-2026-125')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IR-2026-125</td>
+                                    <td class="p-2 border-r border-gray-100">07-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">GAP-WN26-11</td>
+                                    <td class="p-2 border-r border-gray-100">GAP</td>
+                                    <td class="p-2 border-r border-gray-100">25-May-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs border border-gray-200">Draft</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="table_fabricUtilization" class="data-table-container hidden">
+                        <table class="w-full text-left whitespace-nowrap min-w-max">
+                            <thead>
+                                <tr class="bg-tableHeader text-gray-600 border-b border-gray-200">
+                                    <th
+                                        class="p-2 border-r border-gray-200 font-semibold text-center w-[100px] sticky left-0 bg-tableHeader z-10">
+                                        Manage</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Ref / Booking No.</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Date</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Status</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Booking Type</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">EWO Type</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">EWO No.</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Buyer Name</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Team</th>
+                                </tr>
+                                <tr class="bg-tableHeader border-b border-gray-200">
+                                    <th class="p-1 border-r border-gray-200 sticky left-0 bg-tableHeader z-10"></th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('264271-FBR-Add-1')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">264271-FBR-Add-1</td>
+                                    <td class="p-2 border-r border-gray-100">12-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Completed</span>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">Main</td>
+                                    <td class="p-2 border-r border-gray-100">Bulk</td>
+                                    <td class="p-2 border-r border-gray-100">264271</td>
+                                    <td class="p-2 border-r border-gray-100">Vogue Sourcing Limited</td>
+                                    <td class="p-2 border-r border-gray-100">Next</td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('270122-FBR')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">270122-FBR</td>
+                                    <td class="p-2 border-r border-gray-100">10-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Pending</span>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">Additional</td>
+                                    <td class="p-2 border-r border-gray-100">SMS</td>
+                                    <td class="p-2 border-r border-gray-100">270122</td>
+                                    <td class="p-2 border-r border-gray-100">Tommy Jeans</td>
+                                    <td class="p-2 border-r border-gray-100">Tommy Jeans Mens</td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('264985-FBR')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">264985-FBR</td>
+                                    <td class="p-2 border-r border-gray-100">08-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs border border-gray-200">Draft</span>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">Main</td>
+                                    <td class="p-2 border-r border-gray-100">Bulk</td>
+                                    <td class="p-2 border-r border-gray-100">264985</td>
+                                    <td class="p-2 border-r border-gray-100">C&A</td>
+                                    <td class="p-2 border-r border-gray-100">Baby Club Boys</td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('289100-FBR')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">289100-FBR</td>
+                                    <td class="p-2 border-r border-gray-100">05-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs border border-red-200">Rejected</span>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">Shortfall</td>
+                                    <td class="p-2 border-r border-gray-100">Bulk</td>
+                                    <td class="p-2 border-r border-gray-100">289100</td>
+                                    <td class="p-2 border-r border-gray-100">H&M</td>
+                                    <td class="p-2 border-r border-gray-100">H&M Divided</td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('290011-FBR-Add-2')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">290011-FBR-Add-2</td>
+                                    <td class="p-2 border-r border-gray-100">01-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Awaiting</span>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">Main</td>
+                                    <td class="p-2 border-r border-gray-100">Projection</td>
+                                    <td class="p-2 border-r border-gray-100">290011</td>
+                                    <td class="p-2 border-r border-gray-100">Zara</td>
+                                    <td class="p-2 border-r border-gray-100">Zara Kids</td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('301015-FBR-Add-1')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">301015-FBR-Add-1</td>
+                                    <td class="p-2 border-r border-gray-100">14-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Completed</span>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">Additional</td>
+                                    <td class="p-2 border-r border-gray-100">Bulk</td>
+                                    <td class="p-2 border-r border-gray-100">301015</td>
+                                    <td class="p-2 border-r border-gray-100">M&S Sourcing</td>
+                                    <td class="p-2 border-r border-gray-100">Menswear</td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('310055-FBR')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">310055-FBR</td>
+                                    <td class="p-2 border-r border-gray-100">13-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Pending</span>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">Main</td>
+                                    <td class="p-2 border-r border-gray-100">SMS</td>
+                                    <td class="p-2 border-r border-gray-100">310055</td>
+                                    <td class="p-2 border-r border-gray-100">GAP</td>
+                                    <td class="p-2 border-r border-gray-100">Womens Knit</td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('315002-FBR')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">315002-FBR</td>
+                                    <td class="p-2 border-r border-gray-100">10-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs border border-gray-200">Draft</span>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">Shortfall</td>
+                                    <td class="p-2 border-r border-gray-100">Bulk</td>
+                                    <td class="p-2 border-r border-gray-100">315002</td>
+                                    <td class="p-2 border-r border-gray-100">Puma</td>
+                                    <td class="p-2 border-r border-gray-100">Activewear</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="table_fabricConfirmation" class="data-table-container hidden">
+                        <table class="w-full text-left whitespace-nowrap min-w-max">
+                            <thead>
+                                <tr class="bg-tableHeader text-gray-600 border-b border-gray-200">
+                                    <th
+                                        class="p-2 border-r border-gray-200 font-semibold text-center w-[100px] sticky left-0 bg-tableHeader z-10">
+                                        Manage</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Confirm ID</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Date</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Proposal Ref</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Confirmed By</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Variance</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Status</th>
+                                </tr>
+                                <tr class="bg-tableHeader border-b border-gray-200">
+                                    <th class="p-1 border-r border-gray-200 sticky left-0 bg-tableHeader z-10"></th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('CONF-264271')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">CONF-264271</td>
+                                    <td class="p-2 border-r border-gray-100">13-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">264271-FBR-Add-1</td>
+                                    <td class="p-2 border-r border-gray-100">Rafiqul Islam</td>
+                                    <td class="p-2 border-r border-gray-100">0.5%</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Confirmed</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('CONF-270122')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">CONF-270122</td>
+                                    <td class="p-2 border-r border-gray-100">13-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">270122-FBR</td>
+                                    <td class="p-2 border-r border-gray-100">System</td>
+                                    <td class="p-2 border-r border-gray-100">0.0%</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Auto-Confirmed</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('CONF-301015')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">CONF-301015</td>
+                                    <td class="p-2 border-r border-gray-100">14-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">301015-FBR-Add-1</td>
+                                    <td class="p-2 border-r border-gray-100">Tariqul Alam</td>
+                                    <td class="p-2 border-r border-gray-100">1.2%</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Pending</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('CONF-310055')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">CONF-310055</td>
+                                    <td class="p-2 border-r border-gray-100">12-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">310055-FBR</td>
+                                    <td class="p-2 border-r border-gray-100">System</td>
+                                    <td class="p-2 border-r border-gray-100">0.0%</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Auto-Confirmed</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('CONF-315002')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">CONF-315002</td>
+                                    <td class="p-2 border-r border-gray-100">11-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">315002-FBR</td>
+                                    <td class="p-2 border-r border-gray-100">Jahid Hossain</td>
+                                    <td class="p-2 border-r border-gray-100">-0.8%</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs border border-gray-200">Draft</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="table_irEndorsement" class="data-table-container hidden">
+                        <table class="w-full text-left whitespace-nowrap min-w-max">
+                            <thead>
+                                <tr class="bg-tableHeader text-gray-600 border-b border-gray-200">
+                                    <th
+                                        class="p-2 border-r border-gray-200 font-semibold text-center w-[100px] sticky left-0 bg-tableHeader z-10">
+                                        Manage</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Endorsement ID</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Date</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">IR Ref</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Endorsed By</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Priority</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Status</th>
+                                </tr>
+                                <tr class="bg-tableHeader border-b border-gray-200">
+                                    <th class="p-1 border-r border-gray-200 sticky left-0 bg-tableHeader z-10"></th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IRE-2026-081')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IRE-2026-081</td>
+                                    <td class="p-2 border-r border-gray-100">14-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">IR-2026-081</td>
+                                    <td class="p-2 border-r border-gray-100">Senior Merchandiser</td>
+                                    <td class="p-2 border-r border-gray-100">High</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Endorsed</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IRE-2026-085')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IRE-2026-085</td>
+                                    <td class="p-2 border-r border-gray-100">14-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">IR-2026-085</td>
+                                    <td class="p-2 border-r border-gray-100">Pending</td>
+                                    <td class="p-2 border-r border-gray-100">Medium</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Pending</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IRE-2026-115')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IRE-2026-115</td>
+                                    <td class="p-2 border-r border-gray-100">13-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">IR-2026-115</td>
+                                    <td class="p-2 border-r border-gray-100">Head of Sourcing</td>
+                                    <td class="p-2 border-r border-gray-100">Critical</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Endorsed</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IRE-2026-120')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IRE-2026-120</td>
+                                    <td class="p-2 border-r border-gray-100">12-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">IR-2026-120</td>
+                                    <td class="p-2 border-r border-gray-100">Pending</td>
+                                    <td class="p-2 border-r border-gray-100">Low</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Pending</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IRE-2026-125')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IRE-2026-125</td>
+                                    <td class="p-2 border-r border-gray-100">10-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">IR-2026-125</td>
+                                    <td class="p-2 border-r border-gray-100">N/A</td>
+                                    <td class="p-2 border-r border-gray-100">Medium</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs border border-gray-200">Draft</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="table_irApproval" class="data-table-container hidden">
+                        <table class="w-full text-left whitespace-nowrap min-w-max">
+                            <thead>
+                                <tr class="bg-tableHeader text-gray-600 border-b border-gray-200">
+                                    <th
+                                        class="p-2 border-r border-gray-200 font-semibold text-center w-[100px] sticky left-0 bg-tableHeader z-10">
+                                        Manage</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Approval ID</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Date</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">IR Ref</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Approved By</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Remarks</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Status</th>
+                                </tr>
+                                <tr class="bg-tableHeader border-b border-gray-200">
+                                    <th class="p-1 border-r border-gray-200 sticky left-0 bg-tableHeader z-10"></th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IRA-2026-081')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IRA-2026-081</td>
+                                    <td class="p-2 border-r border-gray-100">15-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">IR-2026-081</td>
+                                    <td class="p-2 border-r border-gray-100">Director of Ops</td>
+                                    <td class="p-2 border-r border-gray-100">Approved for bulk</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Approved</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IRA-2026-115')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IRA-2026-115</td>
+                                    <td class="p-2 border-r border-gray-100">14-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">IR-2026-115</td>
+                                    <td class="p-2 border-r border-gray-100">Pending</td>
+                                    <td class="p-2 border-r border-gray-100">Awaiting director signoff</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Pending</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IRA-2026-060')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IRA-2026-060</td>
+                                    <td class="p-2 border-r border-gray-100">10-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">IR-2026-060</td>
+                                    <td class="p-2 border-r border-gray-100">MD</td>
+                                    <td class="p-2 border-r border-gray-100">Approved with condition</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Approved</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IRA-2026-042')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IRA-2026-042</td>
+                                    <td class="p-2 border-r border-gray-100">05-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">IR-2026-042</td>
+                                    <td class="p-2 border-r border-gray-100">GM</td>
+                                    <td class="p-2 border-r border-gray-100">Budget constraints</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs border border-red-200">Rejected</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="table_importData" class="data-table-container hidden">
+                        <table class="w-full text-left whitespace-nowrap min-w-max">
+                            <thead>
+                                <tr class="bg-tableHeader text-gray-600 border-b border-gray-200">
+                                    <th
+                                        class="p-2 border-r border-gray-200 font-semibold text-center w-[100px] sticky left-0 bg-tableHeader z-10">
+                                        Manage</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Import Job ID</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Upload Date</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Data Type</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Records</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Uploaded By</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Status</th>
+                                </tr>
+                                <tr class="bg-tableHeader border-b border-gray-200">
+                                    <th class="p-1 border-r border-gray-200 sticky left-0 bg-tableHeader z-10"></th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IMP-2026-001')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IMP-2026-001</td>
+                                    <td class="p-2 border-r border-gray-100">01-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">Bulk Order History</td>
+                                    <td class="p-2 border-r border-gray-100">4500</td>
+                                    <td class="p-2 border-r border-gray-100">System Admin</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Success</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IMP-2026-002')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IMP-2026-002</td>
+                                    <td class="p-2 border-r border-gray-100">05-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">SMS Data Archive</td>
+                                    <td class="p-2 border-r border-gray-100">1200</td>
+                                    <td class="p-2 border-r border-gray-100">System Admin</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Success</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IMP-2026-003')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IMP-2026-003</td>
+                                    <td class="p-2 border-r border-gray-100">10-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">Supplier Ledger</td>
+                                    <td class="p-2 border-r border-gray-100">350</td>
+                                    <td class="p-2 border-r border-gray-100">Accountant</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs border border-red-200">Failed</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('IMP-2026-004')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">IMP-2026-004</td>
+                                    <td class="p-2 border-r border-gray-100">12-Apr-2026</td>
+                                    <td class="p-2 border-r border-gray-100">Old Vendor DB</td>
+                                    <td class="p-2 border-r border-gray-100">2050</td>
+                                    <td class="p-2 border-r border-gray-100">System Admin</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Pending</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="table_vendorManagement" class="data-table-container hidden">
+                        <table class="w-full text-left whitespace-nowrap min-w-max">
+                            <thead>
+                                <tr class="bg-tableHeader text-gray-600 border-b border-gray-200">
+                                    <th
+                                        class="p-2 border-r border-gray-200 font-semibold text-center w-[100px] sticky left-0 bg-tableHeader z-10">
+                                        Manage</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Vendor ID</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Vendor Name</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Category</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Rating</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Location</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Status</th>
+                                </tr>
+                                <tr class="bg-tableHeader border-b border-gray-200">
+                                    <th class="p-1 border-r border-gray-200 sticky left-0 bg-tableHeader z-10"></th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('VND-101')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">VND-101</td>
+                                    <td class="p-2 border-r border-gray-100">YKK Zippers</td>
+                                    <td class="p-2 border-r border-gray-100">Accessories</td>
+                                    <td class="p-2 border-r border-gray-100">4.8/5.0</td>
+                                    <td class="p-2 border-r border-gray-100">Dhaka</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Active</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('VND-105')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">VND-105</td>
+                                    <td class="p-2 border-r border-gray-100">Square Yarns</td>
+                                    <td class="p-2 border-r border-gray-100">Raw Material</td>
+                                    <td class="p-2 border-r border-gray-100">4.5/5.0</td>
+                                    <td class="p-2 border-r border-gray-100">Gazipur</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Active</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('VND-110')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">VND-110</td>
+                                    <td class="p-2 border-r border-gray-100">Global Trims Ltd</td>
+                                    <td class="p-2 border-r border-gray-100">Accessories</td>
+                                    <td class="p-2 border-r border-gray-100">3.9/5.0</td>
+                                    <td class="p-2 border-r border-gray-100">Chattogram</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Pending
+                                            Review</span></td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('VND-115')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">VND-115</td>
+                                    <td class="p-2 border-r border-gray-100">Bengal Plastics</td>
+                                    <td class="p-2 border-r border-gray-100">Packaging</td>
+                                    <td class="p-2 border-r border-gray-100">4.9/5.0</td>
+                                    <td class="p-2 border-r border-gray-100">Dhaka</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Active</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('VND-120')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">VND-120</td>
+                                    <td class="p-2 border-r border-gray-100">XYZ Chemicals</td>
+                                    <td class="p-2 border-r border-gray-100">Dyes & Chemicals</td>
+                                    <td class="p-2 border-r border-gray-100">2.5/5.0</td>
+                                    <td class="p-2 border-r border-gray-100">Narayanganj</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs border border-red-200">Inactive</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="table_stockCheck" class="data-table-container hidden">
+                        <table class="w-full text-left whitespace-nowrap min-w-max">
+                            <thead>
+                                <tr class="bg-tableHeader text-gray-600 border-b border-gray-200">
+                                    <th
+                                        class="p-2 border-r border-gray-200 font-semibold text-center w-[100px] sticky left-0 bg-tableHeader z-10">
+                                        Manage</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Stock ID</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Item Name</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Warehouse</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Sys Qty</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Phys Qty</th>
+                                    <th class="p-2 border-r border-gray-200 font-semibold">Status</th>
+                                </tr>
+                                <tr class="bg-tableHeader border-b border-gray-200">
+                                    <th class="p-1 border-r border-gray-200 sticky left-0 bg-tableHeader z-10"></th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                    <th class="p-1 border-r border-gray-200"><input type="text" placeholder="Search..."
+                                            class="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 font-normal text-xs">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('STK-FBR-DNM')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">STK-FBR-DNM</td>
+                                    <td class="p-2 border-r border-gray-100">Denim Fabric 12oz</td>
+                                    <td class="p-2 border-r border-gray-100">Zone B</td>
+                                    <td class="p-2 border-r border-gray-100">4,000 yds</td>
+                                    <td class="p-2 border-r border-gray-100">3,850 yds</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs border border-red-200">Discrepancy</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('STK-ACC-BTN')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">STK-ACC-BTN</td>
+                                    <td class="p-2 border-r border-gray-100">Metal Buttons 15mm</td>
+                                    <td class="p-2 border-r border-gray-100">Accessories WH</td>
+                                    <td class="p-2 border-r border-gray-100">50,000 pcs</td>
+                                    <td class="p-2 border-r border-gray-100">Pending Check</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Pending</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('STK-YRN-CTN')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">STK-YRN-CTN</td>
+                                    <td class="p-2 border-r border-gray-100">Cotton Yarn 30/1</td>
+                                    <td class="p-2 border-r border-gray-100">Spinning Unit 1</td>
+                                    <td class="p-2 border-r border-gray-100">12,500 kg</td>
+                                    <td class="p-2 border-r border-gray-100">12,500 kg</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs border border-green-200">Matched</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('STK-PKG-PLB')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">STK-PKG-PLB</td>
+                                    <td class="p-2 border-r border-gray-100">Poly Bags 10x15</td>
+                                    <td class="p-2 border-r border-gray-100">Packaging WH</td>
+                                    <td class="p-2 border-r border-gray-100">100,000 pcs</td>
+                                    <td class="p-2 border-r border-gray-100">98,000 pcs</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs border border-red-200">Discrepancy</span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-blue-50 border-b border-gray-100 bg-white">
+                                    <td
+                                        class="p-2 border-r border-gray-100 flex justify-center gap-3 text-[#313644] text-[15px] sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        <i class="fas fa-eye cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="openDetailedView('STK-ACC-ZIP')"></i><i
+                                            class="fas fa-file-alt cursor-pointer hover:text-blue-600 transition-transform"
+                                            onclick="showToast('View PDF')"></i>
+                                    </td>
+                                    <td class="p-2 border-r border-gray-100">STK-ACC-ZIP</td>
+                                    <td class="p-2 border-r border-gray-100">Nylon Zippers 6"</td>
+                                    <td class="p-2 border-r border-gray-100">Accessories WH</td>
+                                    <td class="p-2 border-r border-gray-100">15,000 pcs</td>
+                                    <td class="p-2 border-r border-gray-100">Pending Check</td>
+                                    <td class="p-2 border-r border-gray-100"><span
+                                            class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs border border-yellow-200">Pending</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <div class="flex justify-between items-center pt-3 text-gray-600 flex-wrap gap-4 shrink-0">
+                    <div class="flex gap-1">
+                        <button
+                            class="px-2.5 py-1 bg-white border border-gray-200 text-activeBlue hover:bg-blue-50 rounded-sm"><i
+                                class="fas fa-angle-double-left"></i></button>
+                        <button
+                            class="px-2.5 py-1 bg-white border border-gray-200 text-activeBlue hover:bg-blue-50 rounded-sm"><i
+                                class="fas fa-angle-left"></i></button>
+                        <button
+                            class="px-2.5 py-1 bg-activeBlue text-white rounded-sm shadow-sm font-semibold">1</button>
+                        <button
+                            class="px-2.5 py-1 bg-white border border-gray-200 text-activeBlue hover:bg-blue-50 rounded-sm">2</button>
+                        <button
+                            class="px-2.5 py-1 bg-white border border-gray-200 text-activeBlue hover:bg-blue-50 rounded-sm">3</button>
+                        <button
+                            class="px-2.5 py-1 bg-white border border-gray-200 text-activeBlue hover:bg-blue-50 rounded-sm">...</button>
+                        <button
+                            class="px-2.5 py-1 bg-white border border-gray-200 text-activeBlue hover:bg-blue-50 rounded-sm"><i
+                                class="fas fa-angle-right"></i></button>
+                        <button
+                            class="px-2.5 py-1 bg-white border border-gray-200 text-activeBlue hover:bg-blue-50 rounded-sm"><i
+                                class="fas fa-angle-double-right"></i></button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <select
+                            class="px-2 py-1 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-400 text-gray-600 bg-white cursor-pointer">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                        </select>
+                        <span id="totalItemsText">Showing records...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="detailedView" class="hidden flex-1 flex-col bg-white overflow-hidden">
+            <div class="bg-gray-100 border-b border-gray-200 flex items-end px-2 pt-2 gap-1 shrink-0 overflow-x-auto whitespace-nowrap custom-scrollbar"
+                id="detailTabsContainer">
+                <button onclick="closeDetailedView()"
+                    class="px-3 py-1.5 bg-white border border-gray-200 border-b-0 rounded-t text-activeBlue hover:bg-gray-50 flex items-center shadow-sm shrink-0">
+                    Close <i class="fas fa-caret-down ml-1"></i>
+                </button>
+                <div
+                    class="nav-tab active-tab px-4 py-2 bg-white border border-gray-200 border-b-0 rounded-t font-semibold text-gray-700 flex items-center shrink-0">
+                    Detailed View <i
+                        class="fas fa-times ml-2 text-[10px] text-gray-400 hover:text-red-500 cursor-pointer"
+                        onclick="closeDetailedView()"></i>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 flex flex-col w-full">
+                <div class="bg-gray-50 border border-gray-200 rounded-sm mb-4">
+                    <div class="p-3 border-b border-gray-200 font-semibold text-gray-700">General Information</div>
+                    <div class="p-4 w-full">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">EWO
+                                    No.</span><input type="text" value="264944"
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">Buyer
+                                    Name</span><input type="text" value="Tommy Hilfiger"
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">Style
+                                    No.</span><input type="text" value="MW0MW37232"
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">Booking
+                                    No.</span><input type="text" value="264944-FBR-Add-1"
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">Buyer
+                                    Team</span><input type="text" value="Tommy Hilfiger Men (MSW)"
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">Order Qty.
+                                    (Kg)</span><input type="text" value="314"
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">Booking
+                                    Date</span><input type="text" value="13-Apr-2026"
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">Customer
+                                    Name</span><input type="text" value="EPYLION KNITWEARS LIMITED"
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">Gmt. Qty.
+                                    (Pcs)</span><input type="text" value="840"
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">Revision
+                                    No.</span><input type="text" value="0"
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">Supplier
+                                    Name</span><input type="text" value="Epyllion Knitex Limited"
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">Calendar
+                                    Days</span><input type="text" value="70"
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">Revision
+                                    Date</span><input type="text" value=""
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+                            <div class="flex-1 row-span-1 lg:row-span-3 items-start gap-2 flex"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 mt-1 text-xs md:text-sm">Notes</span><textarea
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 h-[80px] lg:h-[100px] text-xs md:text-sm"
+                                    readonly>1. TOC COTTON
+2. 122153 PEACHED 315GMS TCO RL FLEECE TH CNS
+3. CARE CODE : UE-25L
+4. THIS IS NCS Order & REPEAT OF...</textarea></div>
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">Fabric
+                                    Delivery Start Date</span><input type="text" value="27-May-2026"
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">Season
+                                    Name</span><input type="text" value="Fall"
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">Fabric
+                                    Delivery END Date</span><input type="text" value="27-May-2026"
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+
+                            <div class="hidden lg:block"></div>
+                            <div class="hidden lg:block"></div>
+                            <div class="flex items-center gap-2"><span
+                                    class="w-[120px] md:w-[150px] shrink-0 text-gray-700 text-xs md:text-sm">Yarn Req.
+                                    Date</span><input type="text" value="29-Apr-2026"
+                                    class="flex-1 w-full p-1.5 border border-gray-300 rounded-sm bg-gray-50 text-xs md:text-sm"
+                                    readonly></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-200 rounded-sm w-full">
+                    <div class="p-3 border-b border-gray-200 font-semibold text-gray-700">Fabric Information</div>
+                    <div class="p-1 overflow-x-auto w-full">
+                        <table class="w-full text-left whitespace-nowrap border-collapse min-w-[800px]">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-700 font-semibold border-b border-gray-200">
+                                    <th class="p-2 border-r border-gray-200">Construction</th>
+                                    <th class="p-2 border-r border-gray-200">Composition</th>
+                                    <th class="p-2 border-r border-gray-200">Color</th>
+                                    <th class="p-2 border-r border-gray-200">GSM</th>
+                                    <th class="p-2 border-r border-gray-200">Fabric Width</th>
+                                    <th class="p-2 border-r border-gray-200">Knitting Type</th>
+                                    <th class="p-2 border-r border-gray-200">Gmt Color</th>
+                                    <th class="p-2 border-r border-gray-200 text-right">Booking Qty.</th>
+                                    <th class="p-2 border-r border-gray-200">UOM</th>
+                                    <th class="p-2">Ref. No.</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                <tr class="hover:bg-gray-50 border-b border-gray-100">
+                                    <td class="p-2 border-r border-gray-100">1X1 Rib</td>
+                                    <td class="p-2 border-r border-gray-100">58% Cotton 39%...</td>
+                                    <td class="p-2 border-r border-gray-100">Medium Grey He...</td>
+                                    <td class="p-2 border-r border-gray-100">450</td>
+                                    <td class="p-2 border-r border-gray-100">65</td>
+                                    <td class="p-2 border-r border-gray-100">Open</td>
+                                    <td class="p-2 border-r border-gray-100">Medium Gr...</td>
+                                    <td class="p-2 border-r border-gray-100 text-right">72</td>
+                                    <td class="p-2 border-r border-gray-100">kg</td>
+                                    <td class="p-2">263471-FBR</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 border-b border-gray-100">
+                                    <td class="p-2 border-r border-gray-100">Single Jersey</td>
+                                    <td class="p-2 border-r border-gray-100">95% Cotton 5% Spandex</td>
+                                    <td class="p-2 border-r border-gray-100">Navy Blue Solid</td>
+                                    <td class="p-2 border-r border-gray-100">180</td>
+                                    <td class="p-2 border-r border-gray-100">62</td>
+                                    <td class="p-2 border-r border-gray-100">Tube</td>
+                                    <td class="p-2 border-r border-gray-100">Navy Blue</td>
+                                    <td class="p-2 border-r border-gray-100 text-right">150</td>
+                                    <td class="p-2 border-r border-gray-100">kg</td>
+                                    <td class="p-2">263472-FBR</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-auto pt-4 border-t border-gray-200">
+                    <button class="px-4 py-1.5 bg-gray-200 text-gray-700 rounded-sm hover:bg-gray-300 font-medium"
+                        onclick="closeDetailedView()">Back to List(s)</button>
+                    <button
+                        class="px-4 py-1.5 bg-red-600 text-white rounded-sm hover:bg-red-700 font-medium">Unacknowledge</button>
+                    <button
+                        class="px-4 py-1.5 bg-activeBlue text-white rounded-sm hover:bg-blue-700 font-medium">Acknowledge</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let toastTimeout;
+        let openTabs = [];
+        let activeTabId = null;
+
+        function initDashboard() {
+            showDashboardHome();
+        }
+
+        // --- DASHBOARD ACTIONS ---
+        function showDashboardHome() {
+            activeTabId = 'dashboard';
+            document.getElementById('listView').classList.add('hidden');
+            document.getElementById('listView').classList.remove('flex');
+            document.getElementById('detailedView').classList.add('hidden');
+            document.getElementById('detailedView').classList.remove('flex');
+
+            document.getElementById('dashboardHomeView').classList.remove('hidden');
+            document.getElementById('dashboardHomeView').classList.add('flex');
+
+            // Deactivate all sidebar items
+            document.querySelectorAll('.submenu-link').forEach(link => {
+                link.className = 'submenu-link block py-2 pl-6 pr-4 text-gray-400 hover:text-white transition-colors';
+            });
+
+            renderTabs();
+            closeSidebarMobile();
+        }
+
+        // --- TAB & DATA LOADING LOGIC ---
+        function loadMenuData(dataKey, menuName, filterToApply = 'All') {
+            // Hide Dashboard and Detailed View
+            document.getElementById('dashboardHomeView').classList.add('hidden');
+            document.getElementById('dashboardHomeView').classList.remove('flex');
+            document.getElementById('detailedView').classList.add('hidden');
+            document.getElementById('detailedView').classList.remove('flex');
+
+            // Show List View
+            document.getElementById('listView').classList.remove('hidden');
+            document.getElementById('listView').classList.add('flex');
+
+            // Add tab if not already open
+            if (!openTabs.find(tab => tab.id === dataKey)) {
+                openTabs.push({ id: dataKey, title: menuName });
+            }
+            activeTabId = dataKey;
+
+            // Render the tabs at the top
+            renderTabs();
+
+            // Hide all tables, show target table
+            document.querySelectorAll('.data-table-container').forEach(t => {
+                t.classList.add('hidden');
+                t.classList.remove('block');
+            });
+            const targetTable = document.getElementById('table_' + dataKey);
+            if (targetTable) {
+                targetTable.classList.remove('hidden');
+                targetTable.classList.add('block');
+            }
+
+            // Update Sidebar visually
+            document.querySelectorAll('.submenu-link').forEach(link => {
+                link.className = 'submenu-link block py-2 pl-6 pr-4 text-gray-400 hover:text-white transition-colors';
+                if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(dataKey)) {
+                    link.className = 'submenu-link block py-2 pl-6 pr-4 text-activeBlue bg-sidebarHover border-l-2 border-activeBlue';
+
+                    // Auto-open the parent menu dropdown
+                    const parentUl = link.closest('ul');
+                    if (parentUl) {
+                        parentUl.classList.remove('hidden');
+                        parentUl.classList.add('block');
+                        const header = parentUl.previousElementSibling;
+                        header.classList.add('bg-sidebarActive', 'text-white');
+                        header.classList.remove('hover:bg-sidebarDark');
+                        const icon = header.querySelector('i');
+                        if (icon) {
+                            icon.classList.remove('fa-chevron-left');
+                            icon.classList.add('fa-chevron-down');
+                        }
+                    }
+                }
+            });
+
+            // Automatically apply filter if provided (e.g. from Dashboard click)
+            setTimeout(() => {
+                const filterMap = {
+                    'All': 'filter-all',
+                    'Pending': 'filter-pending',
+                    'Completed': 'filter-completed',
+                    'Draft': 'filter-draft'
+                };
+                const targetBtn = document.querySelector(`.${filterMap[filterToApply]}`);
+                if (targetBtn) {
+                    activateFilter(filterToApply, targetBtn);
+                }
+            }, 50);
+
+            showToast(`Loading: ${menuName}`);
+            closeSidebarMobile();
+        }
+
+        // Render dynamic tabs in the list view
+        function renderTabs() {
+            const container = document.getElementById('dynamicTabsWrapper');
+            if (!container) return;
+
+            container.innerHTML = ''; // clear current tabs
+
+            openTabs.forEach(tab => {
+                const isActive = tab.id === activeTabId;
+
+                // Create Tab Element
+                const tabEl = document.createElement('div');
+                tabEl.className = `nav-tab px-4 py-2 border border-gray-200 border-b-0 rounded-t cursor-pointer flex items-center shrink-0 transition-colors ${isActive ? 'bg-white font-semibold text-gray-700 active-tab' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`;
+                tabEl.onclick = () => loadMenuData(tab.id, tab.title); // Clicking a tab switches to it
+
+                // Content with close button
+                tabEl.innerHTML = `
+                    ${tab.title} 
+                    <i class="fas fa-times ml-2 text-[10px] text-gray-400 hover:text-red-500 cursor-pointer" onclick="closeTab(event, '${tab.id}')"></i>
+                `;
+
+                container.appendChild(tabEl);
+            });
+
+            // Update static dashboard tab styling
+            const dashTab = document.getElementById('dashboardTabItem');
+            if (dashTab) {
+                if (activeTabId === 'dashboard') {
+                    dashTab.className = 'nav-tab px-4 py-2 bg-white border border-gray-200 border-b-0 rounded-t font-semibold text-gray-700 cursor-pointer shrink-0 transition-colors active-tab';
+                } else {
+                    dashTab.className = 'nav-tab px-4 py-2 bg-gray-50 border border-gray-200 border-b-0 rounded-t text-gray-600 hover:bg-gray-100 cursor-pointer shrink-0 transition-colors';
+                }
+            }
+        }
+
+        function closeTab(event, tabIdToClose) {
+            event.stopPropagation(); // prevent clicking the tab itself
+
+            openTabs = openTabs.filter(tab => tab.id !== tabIdToClose);
+
+            if (openTabs.length === 0) {
+                // If no tabs left, go back to dashboard
+                showDashboardHome();
+            } else if (activeTabId === tabIdToClose) {
+                // If we closed the currently active tab, switch to the last available tab
+                const lastTab = openTabs[openTabs.length - 1];
+                loadMenuData(lastTab.id, lastTab.title);
+            } else {
+                // If we closed a background tab, just re-render tabs
+                renderTabs();
+            }
+        }
+
+        // --- FILTER LOGIC ---
+        function activateFilter(filterType, clickedBtnElement = null) {
+            // If button element not explicitly passed, find it
+            if (!clickedBtnElement) {
+                const filterMap = { 'All': 'filter-all', 'Pending': 'filter-pending', 'Completed': 'filter-completed', 'Draft': 'filter-draft' };
+                clickedBtnElement = document.querySelector(`.${filterMap[filterType]}`);
+            }
+
+            if (clickedBtnElement) {
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.className = `filter-btn px-3 py-1.5 bg-[#f4f5f7] text-gray-600 border border-gray-300 hover:bg-gray-200 rounded-sm whitespace-nowrap shadow-sm font-medium transition-colors ${btn.classList.contains('filter-all') ? 'filter-all' : btn.classList.contains('filter-pending') ? 'filter-pending' : btn.classList.contains('filter-completed') ? 'filter-completed' : 'filter-draft'}`;
+                    const icon = btn.querySelector('i');
+                    if (icon) icon.className = 'fas fa-list mr-1 text-gray-400';
+                });
+
+                clickedBtnElement.className = `filter-btn px-3 py-1.5 bg-green-700 text-white border border-green-800 rounded-sm whitespace-nowrap shadow-sm font-medium transition-colors ${clickedBtnElement.classList.contains('filter-all') ? 'filter-all' : clickedBtnElement.classList.contains('filter-pending') ? 'filter-pending' : clickedBtnElement.classList.contains('filter-completed') ? 'filter-completed' : 'filter-draft'}`;
+                const activeIcon = clickedBtnElement.querySelector('i');
+                if (activeIcon) activeIcon.className = 'fas fa-list mr-1 text-white';
+            }
+
+            // Apply visibility filtering to active table
+            const activeTable = document.querySelector('.data-table-container.block');
+            if (activeTable) {
+                const rows = activeTable.querySelectorAll('tbody tr');
+                let count = 0;
+                rows.forEach(row => {
+                    const statusSpan = row.querySelector('span[class*="bg-"]');
+                    const statusText = statusSpan ? statusSpan.textContent.toLowerCase() : '';
+                    let show = false;
+
+                    if (filterType === 'All') show = true;
+                    else if (filterType === 'Pending' && (statusText.includes('pending') || statusText.includes('awaiting') || statusText.includes('review') || statusText.includes('inactive') || statusText.includes('discrepancy'))) show = true;
+                    else if (filterType === 'Completed' && (statusText.includes('completed') || statusText.includes('approved') || statusText.includes('confirmed') || statusText.includes('success') || statusText.includes('endorsed') || statusText.includes('active') || statusText.includes('acknowledged') || statusText.includes('matched'))) show = true;
+                    else if (filterType === 'Draft' && statusText.includes('draft')) show = true;
+
+                    row.style.display = show ? '' : 'none';
+                    if (show) count++;
+                });
+
+                const countDisplay = document.getElementById('totalItemsText');
+                if (countDisplay) {
+                    countDisplay.textContent = `Showing ${count} item(s)`;
+                }
+            }
+            showToast('Filter Applied: ' + filterType);
+        }
+
+        // --- VIEWS TOGGLE ---
+        function openDetailedView(id = 'Details') {
+            document.getElementById('listView').classList.add('hidden');
+            document.getElementById('listView').classList.remove('flex');
+
+            document.getElementById('detailedView').classList.remove('hidden');
+            document.getElementById('detailedView').classList.add('flex');
+
+            // Build the detailed tabs to look like it corresponds to the item opened
+            const detailTabsContainer = document.getElementById('detailTabsContainer');
+            if (detailTabsContainer) {
+                detailTabsContainer.innerHTML = `
+                    <button onclick="closeDetailedView()" class="px-3 py-1.5 bg-white border border-gray-200 border-b-0 rounded-t text-activeBlue hover:bg-gray-50 flex items-center shadow-sm shrink-0">
+                        Close <i class="fas fa-caret-down ml-1"></i>
+                    </button>
+                    <button class="px-2 py-1.5 text-gray-500 hover:text-gray-800 shrink-0"><i class="fas fa-angle-double-left"></i></button>
+                    
+                    <div class="nav-tab px-4 py-2 bg-gray-50 border border-gray-200 border-b-0 rounded-t text-gray-600 hover:bg-gray-100 cursor-pointer shrink-0 transition-colors" onclick="showDashboardHome()">Dashboard</div>
+                    <div class="nav-tab active-tab px-4 py-2 bg-white border border-gray-200 border-b-0 rounded-t font-semibold text-gray-700 cursor-pointer flex items-center shrink-0 transition-colors">
+                        Details for ${id} <i class="fas fa-times ml-2 text-[10px] text-gray-400 hover:text-red-500 cursor-pointer" onclick="closeDetailedView()"></i>
+                    </div>
+                    <button class="px-2 py-1.5 text-gray-500 hover:text-gray-800 ml-auto shrink-0"><i class="fas fa-angle-double-right"></i></button>
+                `;
+            }
+
+            showToast(`Loading details for: ${id}`);
+        }
+
+        function closeDetailedView() {
+            document.getElementById('detailedView').classList.add('hidden');
+            document.getElementById('detailedView').classList.remove('flex');
+            document.getElementById('listView').classList.remove('hidden');
+            document.getElementById('listView').classList.add('flex');
+        }
+
+        // --- UTILITIES ---
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.remove('opacity-0', 'translate-y-2');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); }, 2000);
+        }
+
+        function toggleSubmenu(headerElement, menuId) {
+            const menu = document.getElementById(menuId);
+            const icon = headerElement.querySelector('i');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden'); menu.classList.add('block');
+                headerElement.classList.add('bg-sidebarActive', 'text-white'); headerElement.classList.remove('hover:bg-sidebarDark');
+                icon.classList.remove('fa-chevron-left'); icon.classList.add('fa-chevron-down');
+            } else {
+                menu.classList.add('hidden'); menu.classList.remove('block');
+                headerElement.classList.remove('bg-sidebarActive', 'text-white'); headerElement.classList.add('hover:bg-sidebarDark');
+                icon.classList.remove('fa-chevron-down'); icon.classList.add('fa-chevron-left');
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.toggle('-translate-x-full');
+            sidebar.classList.toggle('md:w-0');
+            sidebar.classList.toggle('md:translate-x-0');
+            if (window.innerWidth < 768) overlay.classList.toggle('hidden');
+        }
+
+        function closeSidebarMobile() {
+            if (window.innerWidth < 768) {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('translate-x-0');
+                document.getElementById('mobileOverlay').classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+
+</html>
